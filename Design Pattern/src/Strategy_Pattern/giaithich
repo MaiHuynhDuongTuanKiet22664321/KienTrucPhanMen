@@ -1,0 +1,86 @@
+1. Tạo Interface Chiến lược (Strategy Interface)
+Đầu tiên, chúng ta tạo một interface chung mà tất cả các phương thức thanh toán phải tuân thủ. Việc trích xuất các hành vi chung như thu thập thông tin, xác thực và thanh toán vào các phương thức riêng biệt sẽ giúp tăng tính linh hoạt.
+// Interface chung cho các chiến lược thanh toán [1], [2]
+public interface PaymentStrategy {
+    void collectPaymentDetails();
+    boolean validatePaymentDetails();
+    void pay(int amount);
+}
+2. Triển khai các Chiến lược cụ thể (Concrete Strategies)
+Mỗi phương thức thanh toán sẽ là một lớp riêng biệt triển khai interface trên. Điều này giúp tuân thủ Nguyên tắc đơn trách nhiệm (Single Responsibility Principle),.
+// Chiến lược thanh toán bằng Thẻ tín dụng [1], [2]
+public class PaymentByCreditCard implements PaymentStrategy {
+    @Override
+    public void collectPaymentDetails() {
+        System.out.println("Đang thu thập thông tin thẻ tín dụng...");
+    }
+
+    @Override
+    public boolean validatePaymentDetails() {
+        System.out.println("Đang xác thực thẻ tín dụng...");
+        return true;
+    }
+
+    @Override
+    public void pay(int amount) {
+        System.out.println("Đang thanh toán " + amount + " qua Thẻ tín dụng.");
+    }
+}
+
+// Chiến lược thanh toán bằng PayPal [1], [2]
+public class PaymentByPayPal implements PaymentStrategy {
+    @Override
+    public void collectPaymentDetails() {
+        System.out.println("Đang thu thập thông tin tài khoản PayPal...");
+    }
+
+    @Override
+    public boolean validatePaymentDetails() {
+        System.out.println("Đang xác thực tài khoản PayPal...");
+        return true;
+    }
+
+    @Override
+    public void pay(int amount) {
+        System.out.println("Đang thanh toán " + amount + " qua PayPal.");
+    }
+}
+3. Lớp ngữ cảnh (Context Class)
+Lớp này duy trì một tham chiếu đến interface chiến lược và giao tiếp với nó. Lớp ngữ cảnh sẽ không biết chi tiết về cách thuật toán được thực thi.
+// Lớp dịch vụ thanh toán đóng vai trò là Context [2]
+public class PaymentService {
+    private PaymentStrategy strategy;
+
+    // Setter để khách hàng có thể thay đổi chiến lược tại thời điểm thực thi (runtime) [4], [2]
+    public void setStrategy(PaymentStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void processOrder(int amount) {
+        strategy.collectPaymentDetails();
+        if (strategy.validatePaymentDetails()) {
+            strategy.pay(amount);
+        }
+    }
+}
+4. Cách sử dụng (Client Code)
+Phía Client sẽ quyết định chiến lược nào được sử dụng và truyền nó vào Context,.
+public class Main {
+    public static void main(String[] args) {
+        PaymentService service = new PaymentService();
+
+        // Khách hàng chọn thanh toán bằng Thẻ tín dụng [4]
+        service.setStrategy(new PaymentByCreditCard());
+        service.processOrder(100);
+
+        System.out.println("--- Thay đổi phương thức thanh toán ---");
+
+        // Khách hàng đổi sang thanh toán bằng PayPal tại runtime [4], [5]
+        service.setStrategy(new PaymentByPayPal());
+        service.processOrder(200);
+    }
+}
+Lợi ích của cách tiếp cận này:
+• Dễ dàng bảo trì: Tránh được các khối lệnh if-else hoặc switch-case phức tạp khi thêm phương thức thanh toán mới.
+• Nguyên tắc Đóng/Mở (Open/Closed Principle): Bạn có thể thêm các chiến lược thanh toán mới mà không cần sửa đổi mã nguồn của lớp Context hay các chiến lược hiện có,.
+• Thay thế linh hoạt: Các đối tượng chiến lược có thể thay thế cho nhau tại thời điểm chạy (runtime) tùy theo lựa chọn của người dùng

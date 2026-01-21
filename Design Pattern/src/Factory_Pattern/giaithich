@@ -1,0 +1,73 @@
+Mẫu thiết kế này dựa vào tính kế thừa, trong đó lớp cha (Creator) định nghĩa một phương thức trừu tượng để tạo đối tượng, và các lớp con (Concrete Creators) sẽ quyết định lớp nào cần được khởi tạo,.
+1. Product (Sản phẩm)
+Đầu tiên, chúng ta định nghĩa một interface chung cho các sản phẩm (ở đây là Burger) để các loại burger cụ thể cùng triển khai,.
+// Interface chung cho tất cả các loại Burger (Product)
+public interface Burger {
+    void prepare();
+}
+
+// Concrete Product 1: Burger Bò
+class BeefBurger implements Burger {
+    @Override
+    public void prepare() {
+        System.out.println("Đang chuẩn bị Burger Bò...");
+    }
+}
+
+// Concrete Product 2: Burger Chay
+class VeggieBurger implements Burger {
+    @Override
+    public void prepare() {
+        System.out.println("Đang chuẩn bị Burger Chay...");
+    }
+}
+2. Creator (Lớp khởi tạo trừu tượng)
+Đây là phần cốt lõi của Factory Method. Chúng ta chuyển lớp Restaurant thành abstract. Phương thức tạo burger (createBurger) trở thành một phương thức trừu tượng (abstract method). Logic nghiệp vụ (orderBurger) sẽ gọi phương thức này mà không cần biết chính xác loại burger nào được tạo ra,.
+// Creator Class
+public abstract class Restaurant {
+
+    // Logic nghiệp vụ chính
+    public void orderBurger() {
+        // Gọi Factory Method để lấy đối tượng Burger
+        // Lớp cha không biết (và không quan tâm) loại Burger cụ thể nào được tạo
+        Burger burger = createBurger();
+
+        burger.prepare();
+    }
+
+    // ĐÂY LÀ FACTORY METHOD
+    // Phương thức này là abstract, ủy quyền việc khởi tạo cho lớp con
+    public abstract Burger createBurger();
+}
+3. Concrete Creators (Các lớp khởi tạo cụ thể)
+Các lớp con của Restaurant sẽ ghi đè (override) phương thức createBurger để trả về đối tượng Burger cụ thể tương ứng (ví dụ: Nhà hàng Burger Bò sẽ trả về BeefBurger),.
+// Concrete Creator 1: Nhà hàng chuyên Burger Bò
+class BeefBurgerRestaurant extends Restaurant {
+    @Override
+    public Burger createBurger() {
+        return new BeefBurger();
+    }
+}
+
+// Concrete Creator 2: Nhà hàng chuyên Burger Chay
+class VeggieBurgerRestaurant extends Restaurant {
+    @Override
+    public Burger createBurger() {
+        return new VeggieBurger();
+    }
+}
+4. Client Code (Cách sử dụng)
+Người dùng (Client) không cần quan tâm đến logic tạo đối tượng hay các câu lệnh if/else phức tạp. Họ chỉ cần khởi tạo nhà hàng cụ thể mà họ muốn và gọi phương thức xử lý.
+public class Main {
+    public static void main(String[] args) {
+        // Khách hàng muốn đặt Burger Bò
+        Restaurant beefRestaurant = new BeefBurgerRestaurant();
+        beefRestaurant.orderBurger();
+        // Output: Đang chuẩn bị Burger Bò...
+
+        // Khách hàng muốn đặt Burger Chay
+        Restaurant veggieRestaurant = new VeggieBurgerRestaurant();
+        veggieRestaurant.orderBurger();
+        // Output: Đang chuẩn bị Burger Chay...
+    }
+}

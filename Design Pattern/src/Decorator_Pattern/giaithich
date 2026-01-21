@@ -1,0 +1,76 @@
+Based on the sources provided, here is the sample code in Java for the Decorator Design Pattern applied to the notification service example.
+The pattern allows you to attach new behaviors to an object by placing it inside a wrapper object.
+1. The Component Interface
+This interface declares common behaviors for both the core objects and the decorators.
+// The INotifier interface used across the application [3]
+public interface INotifier {
+    void send(String message);
+}
+2. The Concrete Component
+This is the original class that defines the basic behavior (in this case, sending an email).
+public class Notifier implements INotifier {
+    @Override
+    public void send(String message) {
+        // Logic to retrieve email from database and send message [4]
+        System.out.println("Sending Email: " + message);
+    }
+}
+3. The Base Decorator
+This class acts as a wrapper or container. It must have a field for referencing the wrapped object via the interface so it can point to both the concrete component and other decorators.
+public abstract class BaseNotifierDecorator implements INotifier {
+    protected INotifier wrapped;
+
+    public BaseNotifierDecorator(INotifier notifier) {
+        this.wrapped = notifier;
+    }
+
+    @Override
+    public void send(String message) {
+        // Delegates the work to the wrapped object [5, 6]
+        wrapped.send(message);
+    }
+}
+4. Concrete Decorators
+These classes extend the base decorator and execute their specific behavior (Facebook or WhatsApp) either before or after calling the parent method.
+// Facebook Decorator [1, 5]
+public class FacebookDecorator extends BaseNotifierDecorator {
+    public FacebookDecorator(INotifier notifier) {
+        super(notifier);
+    }
+
+    @Override
+    public void send(String message) {
+        super.send(message); // Calling the parent method is a must [5]
+        System.out.println("Sending Facebook message: " + message);
+    }
+}
+
+// WhatsApp Decorator [1, 5]
+public class WhatsAppDecorator extends BaseNotifierDecorator {
+    public WhatsAppDecorator(INotifier notifier) {
+        super(notifier);
+    }
+
+    @Override
+    public void send(String message) {
+        super.send(message);
+        System.out.println("Sending WhatsApp message: " + message);
+    }
+}
+5. Client Implementation
+The client can wrap components in multiple layers of decorators at runtime.
+public class Client {
+    public static void main(String[] args) {
+        // The customer wants to be notified via Email, WhatsApp, and Facebook [8, 9]
+        INotifier notificationStack = new Notifier(); // Base Email
+        notificationStack = new WhatsAppDecorator(notificationStack); // Wrap with WhatsApp
+        notificationStack = new FacebookDecorator(notificationStack); // Wrap with Facebook
+
+        // This single call will trigger all three notification types [9]
+        notificationStack.send("Your food order has departed!");
+    }
+}
+Key Benefits Mentioned in the Sources:
+• Composition over Inheritance: Instead of creating endless subclasses (like WhatsAppAndFacebookNotifier), you use composition to combine behaviors.
+• Runtime Flexibility: You can change the behavior of the container while the application is running.
+• SOLID Principles: It applies the Single Responsibility and Open-Closed principles by isolating behaviors into separate classes without modifying the original code.

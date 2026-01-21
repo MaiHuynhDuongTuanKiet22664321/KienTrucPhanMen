@@ -1,0 +1,96 @@
+Mẫu thiết kế này giúp một đối tượng thay đổi hành vi khi trạng thái nội bộ của nó thay đổi, trông như thể đối tượng đó đã thay đổi lớp của chính mình.
+1. Lớp Trạng thái Trừu tượng (State Abstract Class)
+Lớp này lưu trữ một tham chiếu đến đối tượng Phone (Context) và định nghĩa các phương thức đại diện cho các hành động (nút bấm),.
+public abstract class State {
+    protected Phone phone;
+
+    public State(Phone phone) {
+        this.phone = phone;
+    }
+
+    // Các phương thức đại diện cho các nút bấm trên điện thoại [2]
+    public abstract String onHome();
+    public abstract String onPower();
+}
+2. Lớp Ngữ cảnh (Context Class) - Phone
+Lớp này lưu giữ trạng thái hiện tại và cho phép chuyển đổi giữa các trạng thái,.
+public class Phone {
+    private State state;
+
+    public Phone() {
+        // Khởi tạo trạng thái ban đầu là Tắt (OffState) [1], [4]
+        this.state = new OffState(this);
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    // Các phương thức chức năng của điện thoại [2]
+    public String clickHome() {
+        return state.onHome();
+    }
+
+    public String clickPower() {
+        return state.onPower();
+    }
+}
+3. Các Trạng thái Cụ thể (Concrete States)
+Mỗi lớp này sẽ ghi đè các phương thức để thực hiện hành vi cụ thể và xử lý việc chuyển đổi trạng thái,.
+Trạng thái Tắt (OffState):
+public class OffState extends State {
+    public OffState(Phone phone) {
+        super(phone);
+    }
+
+    @Override
+    public String onHome() {
+        phone.setState(new LockedState(phone)); // Chuyển sang trạng thái Khóa [1]
+        return "Điện thoại đang bật nhưng đang bị khóa.";
+    }
+
+    @Override
+    public String onPower() {
+        phone.setState(new LockedState(phone)); // Chuyển sang trạng thái Khóa [1]
+        return "Điện thoại đang bật nhưng đang bị khóa.";
+    }
+}
+Trạng thái Khóa (LockedState):
+public class LockedState extends State {
+    public LockedState(Phone phone) {
+        super(phone);
+    }
+
+    @Override
+    public String onHome() {
+        phone.setState(new ReadyState(phone)); // Nhấn Home lần nữa để mở khóa [1]
+        return "Điện thoại đã được mở khóa, sẵn sàng sử dụng.";
+    }
+
+    @Override
+    public String onPower() {
+        phone.setState(new OffState(phone)); // Nhấn Power sẽ tắt điện thoại [1]
+        return "Đang tắt màn hình...";
+    }
+}
+Trạng thái Sẵn sàng (ReadyState):
+public class ReadyState extends State {
+    public ReadyState(Phone phone) {
+        super(phone);
+    }
+
+    @Override
+    public String onHome() {
+        return "Đang quay lại màn hình chính."; // Đang sử dụng, nhấn Home về trang chủ [1]
+    }
+
+    @Override
+    public String onPower() {
+        phone.setState(new OffState(phone)); // Đang sử dụng, nhấn Power sẽ tắt [1]
+        return "Đang tắt điện thoại...";
+    }
+}
+Lợi ích của cách tiếp cận này:
+• Tránh các câu lệnh điều kiện phức tạp: Thay vì sử dụng nhiều if-else hoặc switch-case để kiểm tra trạng thái, mã nguồn tự động gọi hành vi chính xác thông qua tính đa hình,.
+• Tuân thủ nguyên tắc thiết kế: Áp dụng nguyên tắc Đơn trách nhiệm (mỗi trạng thái ở một lớp riêng) và nguyên tắc Đóng/Mở (có thể thêm trạng thái mới mà không cần sửa đổi các lớp hiện có).
+• Khác biệt với Strategy Pattern: Trong khi Strategy Pattern tập trung vào các cách khác nhau để thực hiện cùng một công việc, State Pattern cho phép các trạng thái phụ thuộc lẫn nhau và tự ý thức về nhau để thực hiện việc chuyển đổi.
