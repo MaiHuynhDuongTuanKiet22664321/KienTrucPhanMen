@@ -5,10 +5,6 @@ volatile là từ khóa cực kỳ quan trọng. Nó đảm bảo rằng giá tr
 
 Nó cũng ngăn chặn việc "sắp xếp lại lệnh" (instruction reordering) của trình biên dịch, tránh trường hợp một Thread nhận được một instance chưa khởi tạo xong.
 
-private Singleton(String data) (Cần sửa thành private):
-
-Ngăn chặn việc các class khác khởi tạo đối tượng bằng từ khóa new.
-
 Hàm getInstance(String data):
 
 Lần kiểm tra 1 (if (result == null)): Nếu instance đã tồn tại, trả về ngay mà không cần vào khối synchronized. Điều này giúp tăng tốc độ vì việc "khóa" (locking) rất tốn tài nguyên.
